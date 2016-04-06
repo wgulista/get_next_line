@@ -23,7 +23,7 @@ static char     *add_to_line(char *line, int cur, char *buff, int *start)
   	ft_strncpy(new_elem + old_len, buff + *start, cur);
   	new_elem[old_len + cur] = 0;
   	if (line)
-    	free(line);
+    		free(line);
   	*start += cur + 1;
   	return (new_elem);
 }
