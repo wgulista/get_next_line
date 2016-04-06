@@ -12,70 +12,50 @@
 
 #include "get_next_line.h"
 
-static int			check_line(char *str)
+static char     *add_to_line(char *line, int cur, char *buff, int *start)
 {
-	int		i;
-
-	i = 0;
-	if (!str)
-		return (-1);
-	while (str[i] && str[i] != '\n')
-		i++;
-	if (str[i] != '\n')
-		return (-1);
-	return (i);
+	char          *new_elem;
+  	int           old_len;
+ 
+  	old_len = (line) ? ft_strlen(line) : 0;
+  	new_elem = ft_memalloc((old_len + cur + 1) * sizeof(*new_elem));
+  	ft_strncpy(new_elem, line ? line : "", old_len);
+  	ft_strncpy(new_elem + old_len, buff + *start, cur);
+  	new_elem[old_len + cur] = 0;
+  	if (line)
+    	free(line);
+  	*start += cur + 1;
+  	return (new_elem);
 }
-
-static char			*ft_join(char **dest, char *src)
+ 
+int            get_next_line(const int fd, char **line)
 {
-	char	*temp;
-
-	temp = NULL;
-	temp = ft_strjoin(*dest, src);
-	if (!temp)
-		return (NULL);
-	ft_strdel(dest);
-	return (temp);
-}
-
-static char			*ft_fill(int chk, char **rest, char **line)
-{
-	char	*new_rest;
-
-	new_rest = NULL;
-	if (!(*line = ft_strsub(*rest, 0, chk)))
-		return (NULL);
-	if (!(new_rest = ft_strsub(*rest, chk + 1, ft_strlen(*rest) - chk + 1)))
-		return (NULL);
-	ft_strdel(rest);
-	return (new_rest);
-}
-
-int					get_next_line(int fd, char **line)
-{
-	static char		*rest[256];
-	char			buff[BUFF_SIZE + 1];
-	int				rd;
-	int				chk;
-
-	if (!line || fd < 0)
-		return (-1);
-	rd = 0;
-	while ((chk = check_line(rest[fd])) == -1)
-	{
-		if ((rd = read(fd, buff, BUFF_SIZE)) == -1)
-			return (-1);
-		buff[rd] = '\0';
-		rest[fd] = ft_join(&rest[fd], buff);
-		if (!rest[fd])
-			return (-1);
-		ft_strclr(buff);
-		if (rd == 0)
-		{
-			*line = ft_join(&rest[fd], buff);
-			return (0);
-		}
-	}
-	rest[fd] = ft_fill(chk, &rest[fd], line);
-	return (1);
+  	static char   buff[BUFF_SIZE + 1];
+ 	static int    in_buf = 0;
+ 	static int    start;
+  	int           cur;
+ 
+  	*line = 0;
+  	cur = 0;
+  	while (1)
+    {
+      	if (start >= in_buf)
+        {
+          	start = 0;
+          	if (!(in_buf = read(fd, buff, BUFF_SIZE)))
+            	return (-1);
+        	if (in_buf == -1)
+          		return (-1);
+        	cur = 0;
+        }
+      	if (buff[start + cur] == '\n')
+      	{
+      		*line = add_to_line(*line, cur, buff, &start);
+      		return (1);
+      	}
+      	if (start + cur == in_buf - 1)
+        	*line = add_to_line(*line, cur + 1, buff, &start);
+      	cur++;
+    }
+    return (0);
 }
