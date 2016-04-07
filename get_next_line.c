@@ -34,7 +34,9 @@ int            get_next_line(const int fd, char **line)
  	static int    in_buf = 0;
  	static int    start;
   	int           cur;
- 
+
+  	if (fd <= 0 || line == NULL)
+  		return (-1);
   	*line = 0;
   	cur = 0;
   	while (1)
