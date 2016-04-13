@@ -14,25 +14,27 @@
 
 int					get_next_line(int fd, char **line)
 {
-	static char		*rest;
+	static char		*save;
 	char			buff[BUFF_SIZE + 1];
 	int				rd;
 
-	if (fd <= 0 || line == NULL || BUFF_SIZE < 1)
+	if (fd <= 0 || line == NULL || BUFF_SIZE <= 0)
 		return (-1);
-	rest = (char*)malloc(sizeof(char) * (BUFF_SIZE + 1));
-	*line = (char*)malloc(sizeof(char) * (ft_strlen(rest) + BUFF_SIZE + 1));
-	while ((rd = read(fd, buff, BUFF_SIZE)) > 0)
+	*line = ft_strnew(BUFF_SIZE + 1);
+	save = ft_strnew(BUFF_SIZE + 1);
+	while ((save = ft_strchr(*line, '\n')) == NULL
+		&& (rd = read(fd, buff, BUFF_SIZE)) > 0 && rd != 0)
 	{
 		buff[rd] = '\0';
-		ft_strncat(*line, buff, ft_strlen(buff));
+		if (buff[rd] != '\n')
+			ft_strncat(*line, buff, ft_strlen(buff));
 	}
-	if (rd == 0 && (rest = ft_strchr(*line, '\n')))
+	if ((save = ft_strchr(*line, '\n')))
 	{
-		*rest = '\0';
+		*save = '\0';
 		return (1);
 	}
-	if (rd == -1)
-		return (-1);
-	return (0);
+	if (rd == 0)
+		return (0);
+	return (-1);
 }
