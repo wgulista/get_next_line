@@ -13,7 +13,7 @@
 #include "get_next_line.h"
 
 int		line_len(char *str, int c)
-{	
+{
 	int				i;
 
 	i = 0;
@@ -24,20 +24,13 @@ int		line_len(char *str, int c)
 	return (0);
 }
 
-int		check_line_and_eof(char **save)
+int		check_line(char **save, char *tmp, char **line)
 {
-	char			*tmp;
-
-	if (ft_strchr(*save, '\n') != NULL)
+	if (ft_strchr(*save, '\n'))
 	{
+		if (!(*line = ft_strsub(*save, 0, line_len(*save, '\n'))))
+			return (-1);
 		tmp = ft_strdup(ft_strchr(*save, '\n') + 1);
-		free(*save);
-		*save = tmp;
-		return (1);
-	}
-	if (ft_strchr(*save, '\n') == NULL && line_len(*save, '\0') > 0)
-	{
-		tmp = ft_strdup(*save);
 		free(*save);
 		*save = tmp;
 		return (1);
@@ -46,35 +39,30 @@ int		check_line_and_eof(char **save)
 }
 
 int		get_next_line(int const fd, char **line)
-{	
+{
 	static char		*save[256];
 	char			buff[BUFF_SIZE + 1];
 	char			*tmp;
 	int				rd;
 
-	if (fd <= 0 || fd > 256 || line == NULL || BUFF_SIZE < 0)
+	if (fd < 0 || fd > 256 || line == NULL || BUFF_SIZE < 0)
 		return (-1);
 	if (save[fd] == NULL)
-		save[fd] = ft_strnew(BUFF_SIZE + 1);
-	while ((rd = read(fd, buff, BUFF_SIZE)) > 0)
+		save[fd] = ft_strdup("");
+	while ((rd = read(fd, buff, BUFF_SIZE)) > 0 && rd != 0)
 	{
 		buff[rd] = '\0';
 		tmp = ft_strjoin(save[fd], buff);
 		free(save[fd]);
 		save[fd] = tmp;
-		if (rd != 0 && ft_strchr(save[fd], '\n'))
-			break;
+		if (ft_strchr(save[fd], '\n'))
+			break ;
 	}
 	if (rd == -1 || save[fd] == NULL)
 		return (-1);
-	if (!(*line = ft_strsub(save[fd], 0, line_len(save[fd], '\n'))))
+	if (check_line(&save[fd], tmp, line) == 1)
+		return (1);
+	if (!(*line = ft_strdup(save[fd])))
 		return (-1);
-	(rd = check_line_and_eof(&save[fd])) ? 0 : free(*line);
 	return (rd ? 1 : 0);
 }
-
-
-
-
-
-
