@@ -28,11 +28,16 @@ int		check_line(char **save, char *tmp, char **line)
 {
 	if (ft_strchr(*save, '\n'))
 	{
-		if (!(*line = ft_strsub(*save, 0, line_len(*save, '\n'))))
-			return (-1);
+		*line = ft_strsub(*save, 0, line_len(*save, '\n'));
 		tmp = ft_strdup(ft_strchr(*save, '\n') + 1);
 		free(*save);
 		*save = tmp;
+		return (1);
+	}
+	if (ft_strcmp(*save, '\0') != 0)
+	{
+		*line = ft_strsub(*save, 0, line_len(*save, '\0'));
+		free(*save);
 		return (1);
 	}
 	return (0);
@@ -45,24 +50,22 @@ int		get_next_line(int const fd, char **line)
 	char			*tmp;
 	int				rd;
 
-	if (fd < 0 || fd > 256 || line == NULL || BUFF_SIZE < 0)
+	if (fd < 0 || fd > 256|| line == NULL || BUFF_SIZE < 0)
 		return (-1);
-	if (save[fd] == NULL)
+	if (!save[fd])
 		save[fd] = ft_strdup("");
-	while ((rd = read(fd, buff, BUFF_SIZE)) > 0 && rd != 0)
+	while ((rd = read(fd, buff, BUFF_SIZE)))
 	{
 		buff[rd] = '\0';
 		tmp = ft_strjoin(save[fd], buff);
 		free(save[fd]);
 		save[fd] = tmp;
-		if (ft_strchr(save[fd], '\n'))
+		if (*save[fd] == '\0' || ft_strchr(save[fd], '\n'))
 			break ;
 	}
 	if (rd == -1 || save[fd] == NULL)
 		return (-1);
 	if (check_line(&save[fd], tmp, line) == 1)
 		return (1);
-	if (!(*line = ft_strdup(save[fd])))
-		return (-1);
 	return (rd ? 1 : 0);
 }
