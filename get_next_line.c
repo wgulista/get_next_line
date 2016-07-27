@@ -45,6 +45,7 @@ static int		check_eof(t_gnl *gnl, char **line)
 		ft_strdel(&gnl->save);
 		return (1);
 	}
+	ft_strdel(line);
 	ft_strdel(&gnl->save);
 	return (0);
 }
@@ -64,6 +65,7 @@ static void		ft_read_fd(t_gnl *gnl, const int fd)
 		if (ft_strchr(gnl->save, '\n'))
 			break ;
 	}
+	ft_strdel(&gnl->tmp);
 	ft_strdel(&gnl->buff);
 }
 
